@@ -9,7 +9,7 @@ MyString::MyString(const char* str) {
     }
 }
 
-MyString::MyString(MyString&& other)
+MyString::MyString(MyString&& other) noexcept
     : len_(other.len_)
     , str_(other.str_)
     , refcount_(other.refcount_) {
@@ -31,7 +31,7 @@ MyString& MyString::operator=(const MyString& other) {
     return *this;
 }
 
-MyString& MyString::operator=(MyString&& other) {
+MyString& MyString::operator=(MyString&& other) noexcept {
     if (this != &other) {
         destruct();
         len_ = other.len_;
@@ -44,7 +44,7 @@ MyString& MyString::operator=(MyString&& other) {
     return *this;
 }
 
-void MyString::destruct() {
+void MyString::destruct() noexcept {
     if (str_) {
         --(*refcount_);
         if (*refcount_ == 0) {
@@ -54,14 +54,14 @@ void MyString::destruct() {
     }
 }
 
-MyString::~MyString() {
+MyString::~MyString() noexcept {
     destruct();
 }
 
 
 
 MyString& MyString::operator+=(const MyString& other) {
-    if (other.size() == 0) {
+    if (other.len_ == 0) {
         return *this;
     }
     len_ = len_ + other.len_;
@@ -75,9 +75,47 @@ MyString& MyString::operator+=(const MyString& other) {
 }
 
 MyString operator+(MyString lhs, const MyString& rhs) {
-    return MyString(lhs += rhs);
+    return lhs += rhs;
+}
+
+MyString& MyString::operator+=(const char c) {
+    len_ = len_ + 1;
+    char* tmp = new char[len_ + 1];
+    strcpy(tmp, str_);
+    tmp[len_ - 1] = c;
+    tmp[len_] = '\0',
+    destruct();
+    str_ = tmp;
+    refcount_ = new int{1};
+    return *this;
+}
+
+MyString operator+(MyString lhs, const char c) {
+    return lhs += c;
+}
+
+char& MyString::operator[](int ind) {
+    if (ind < 0 || (size_t)ind >= len_) {
+        throw std::out_of_range("tulindexeles");
+    }
+    if (*refcount_ == 1) {
+        return str_[ind];
+    }
+    char *tmp = new char[len_ + 1];
+    strcpy(tmp, str_);
+    str_ = tmp;
+    --(*refcount_);
+    refcount_ = new int{1};
+    return str_[ind];
 }
 
 std::ostream& operator<<(std::ostream& os, const MyString& my_str) {
     return os << my_str.str_ << " " << *my_str.refcount_ << std::endl;
+}
+
+std::istream& operator>>(std::istream& is, MyString& my_str) {
+    char *str;
+    is >> str;
+    my_str = MyString(str);
+    return is;
 }

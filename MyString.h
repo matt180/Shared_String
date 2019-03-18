@@ -2,10 +2,11 @@
 #define MYSTRING_H_INCLUDED
 #include <iostream>
 #include <cstring>
+#include <exception>
 
 class MyString {
     private:
-        void destruct();
+        void destruct() noexcept;
 
     public:
         explicit MyString(const char* str = "");
@@ -19,21 +20,34 @@ class MyString {
                 }
         }
 
-        MyString(MyString&& other);
+        MyString(MyString&& other) noexcept;
 
-        size_t size() const {
+        size_t size() const noexcept {
             return len_;
         }
 
         MyString& operator=(const MyString& other);
 
-        MyString& operator=(MyString&& other);
+        MyString& operator=(MyString&& other) noexcept;
 
         MyString& operator+=(const MyString& other);
 
-        ~MyString();
+        MyString& operator+=(const char c);
+
+        char operator[](int ind) const {
+            if (ind < 0 || (size_t)ind >= len_) {
+                throw std::out_of_range("tulindexeles");
+            }
+            return str_[ind];
+        }
+
+        char& operator[](int ind);
+
+        ~MyString() noexcept;
 
         friend std::ostream& operator<<(std::ostream& os, const MyString& my_str);
+
+        friend std::istream& operator>>(std::istream& is, MyString& my_str);
 
     private:
 
@@ -41,6 +55,8 @@ class MyString {
         char* str_{nullptr};
         int* refcount_{nullptr};
 };
+
+MyString operator+(MyString lhs, const char c);
 
 MyString operator+(MyString lhs, const MyString& rhs);
 
