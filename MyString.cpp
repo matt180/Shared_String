@@ -2,8 +2,9 @@
 
 MyString::MyString(const char* str) {
     if (str) {
-        len_ = strlen(str) + 1;
-        str_ = new char[len_];
+        len_ = strlen(str);
+        str_ = new char[len_ + 1];
+        strcpy(str_, str);
         refcount_ = new int{1};
     }
 }
@@ -60,10 +61,23 @@ MyString::~MyString() {
 
 
 MyString& MyString::operator+=(const MyString& other) {
-    //if (other != "")
-
+    if (other.size() == 0) {
+        return *this;
+    }
+    len_ = len_ + other.len_;
+    char* tmp = new char[len_ + 1];
+    strcpy(tmp, str_);
+    strcat(tmp, other.str_);
+    destruct();
+    str_ = tmp;
+    refcount_ = new int{1};
+    return *this;
 }
 
-MyString& operator+(const MyString& other) {
+MyString operator+(MyString lhs, const MyString& rhs) {
+    return MyString(lhs += rhs);
+}
 
+std::ostream& operator<<(std::ostream& os, const MyString& my_str) {
+    return os << my_str.str_ << " " << *my_str.refcount_ << std::endl;
 }

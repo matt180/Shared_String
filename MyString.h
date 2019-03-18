@@ -1,6 +1,6 @@
 #ifndef MYSTRING_H_INCLUDED
 #define MYSTRING_H_INCLUDED
-
+#include <iostream>
 #include <cstring>
 
 class MyString {
@@ -33,6 +33,7 @@ class MyString {
 
         ~MyString();
 
+        friend std::ostream& operator<<(std::ostream& os, const MyString& my_str);
 
     private:
 
@@ -41,6 +42,6 @@ class MyString {
         int* refcount_{nullptr};
 };
 
-MyString& operator+(const MyString& rhs);
+MyString operator+(MyString lhs, const MyString& rhs);
 
 #endif // MYSTRING_H_INCLUDED
