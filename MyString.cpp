@@ -1,4 +1,5 @@
-#include <MyString.h>
+#include "mystring.h"
+#include <cctype>
 
 MyString::MyString(const char* str) {
     if (str) {
@@ -49,7 +50,7 @@ void MyString::destruct() noexcept {
         --(*refcount_);
         if (*refcount_ == 0) {
             delete refcount_;
-            delete str_;
+            delete[] str_;
         }
     }
 }
@@ -110,12 +111,29 @@ char& MyString::operator[](int ind) {
 }
 
 std::ostream& operator<<(std::ostream& os, const MyString& my_str) {
-    return os << my_str.str_ << " " << *my_str.refcount_ << std::endl;
+    return os << my_str.str_;
 }
 
 std::istream& operator>>(std::istream& is, MyString& my_str) {
-    char *str;
-    is >> str;
+    int i = 0, max_length = 10;
+    char* str = new char[max_length];
+    char c = is.get();
+    while (c != '\n') {
+        if (i >= max_length - 1) {
+            max_length *= 2;
+            char* tmp = new char[max_length];
+            for (int j = 0; j <= i; ++j) {
+                tmp[j] = str[j];
+            }
+            delete[] str;
+            str = tmp;
+        }
+        str[i] = c;
+        ++i;
+        c = is.get();
+    }
+    str[i] = '\0';
     my_str = MyString(str);
+    delete[] str;
     return is;
 }

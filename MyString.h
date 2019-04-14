@@ -43,6 +43,11 @@ class MyString {
 
         char& operator[](int ind);
 
+        //for tests
+        int get_refcount() const noexcept{
+            return refcount_ ? (*refcount_) : 0;
+        }
+
         ~MyString() noexcept;
 
         friend std::ostream& operator<<(std::ostream& os, const MyString& my_str);
